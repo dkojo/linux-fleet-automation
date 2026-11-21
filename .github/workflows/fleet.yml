@@ -1,0 +1,97 @@
+name: fleet
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 0"   # the weekly maintenance window: Sunday 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fleet-${{ github.ref }}
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build the fleet images
+        run: |
+          mkdir -p .keys && ssh-keygen -q -t ed25519 -N '' -C fleet-automation -f .keys/fleet
+          docker compose build -q
+          bash fleet/fetch-agent.sh
+
+      - name: Start the fleet
+        run: bash fleet/start.sh
+
+      - name: "Preflight: all hosts"
+        run: python3 fleet/fleet.py preflight
+
+      - name: "Patch: canary"
+        run: python3 fleet/fleet.py patch --batch 1
+
+      - name: "Patch: batch 2"
+        run: python3 fleet/fleet.py patch --batch 2
+
+      - name: "Patch: batch 3"
+        run: python3 fleet/fleet.py patch --batch 3
+
+      - name: "Patch: batch 4"
+        run: python3 fleet/fleet.py patch --batch 4
+
+      - name: "Backup: canary"
+        run: python3 fleet/fleet.py backup --batch 1
+
+      - name: "Backup: batch 2"
+        run: python3 fleet/fleet.py backup --batch 2
+
+      - name: "Backup: batch 3"
+        run: python3 fleet/fleet.py backup --batch 3
+
+      - name: "Backup: batch 4"
+        run: python3 fleet/fleet.py backup --batch 4
+
+      - name: "Log rotation: canary"
+        run: python3 fleet/fleet.py rotate --batch 1
+
+      - name: "Log rotation: batch 2"
+        run: python3 fleet/fleet.py rotate --batch 2
+
+      - name: "Log rotation: batch 3"
+        run: python3 fleet/fleet.py rotate --batch 3
+
+      - name: "Log rotation: batch 4"
+        run: python3 fleet/fleet.py rotate --batch 4
+
+      - name: "Monitoring agent: canary"
+        run: python3 fleet/fleet.py agent --batch 1
+
+      - name: "Monitoring agent: batch 2"
+        run: python3 fleet/fleet.py agent --batch 2
+
+      - name: "Monitoring agent: batch 3"
+        run: python3 fleet/fleet.py agent --batch 3
+
+      - name: "Monitoring agent: batch 4"
+        run: python3 fleet/fleet.py agent --batch 4
+
+      - name: Fleet report
+        if: always()
+        run: python3 fleet/fleet.py report
+
+      - name: Upload the fleet report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fleet-report
+          path: fleet-report.json
+          if-no-files-found: ignore

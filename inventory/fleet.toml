@@ -1,0 +1,77 @@
+# The fleet. Batch 1 is the canary: one host per distro. Every job runs batch by batch
+# and stops the rollout at the first batch with a failed host.
+
+[vault]
+ip = "10.42.0.5"
+
+[[host]]
+name = "rocky-01"
+ip = "10.42.0.11"
+distro = "rocky"
+batch = 1
+
+[[host]]
+name = "rocky-02"
+ip = "10.42.0.12"
+distro = "rocky"
+batch = 2
+
+[[host]]
+name = "rocky-03"
+ip = "10.42.0.13"
+distro = "rocky"
+batch = 3
+
+[[host]]
+name = "rocky-04"
+ip = "10.42.0.14"
+distro = "rocky"
+batch = 4
+
+[[host]]
+name = "centos-01"
+ip = "10.42.0.15"
+distro = "centos"
+batch = 1
+
+[[host]]
+name = "centos-02"
+ip = "10.42.0.16"
+distro = "centos"
+batch = 2
+
+[[host]]
+name = "centos-03"
+ip = "10.42.0.17"
+distro = "centos"
+batch = 3
+
+[[host]]
+name = "centos-04"
+ip = "10.42.0.18"
+distro = "centos"
+batch = 4
+
+[[host]]
+name = "ubuntu-01"
+ip = "10.42.0.19"
+distro = "ubuntu"
+batch = 1
+
+[[host]]
+name = "ubuntu-02"
+ip = "10.42.0.20"
+distro = "ubuntu"
+batch = 2
+
+[[host]]
+name = "ubuntu-03"
+ip = "10.42.0.21"
+distro = "ubuntu"
+batch = 3
+
+[[host]]
+name = "ubuntu-04"
+ip = "10.42.0.22"
+distro = "ubuntu"
+batch = 4

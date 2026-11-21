@@ -1,0 +1,104 @@
+# The fleet: 12 servers across three distros, plus a backup host, on one private network.
+x-host: &host
+  volumes: ["./.keys/fleet.pub:/run/keys/fleet.pub:ro"]
+  restart: "no"
+
+services:
+  vault:
+    build: { context: ./hosts, dockerfile: vault.Dockerfile }
+    container_name: vault
+    hostname: vault
+    volumes: ["./.keys/fleet.pub:/run/keys/fleet.pub:ro"]
+    networks: { fleet: { ipv4_address: 10.42.0.5 } }
+
+  rocky-01:
+    <<: *host
+    image: fleet-rocky
+    build: { context: ./hosts, dockerfile: rocky.Dockerfile }
+    container_name: rocky-01
+    hostname: rocky-01
+    networks: { fleet: { ipv4_address: 10.42.0.11 } }
+
+  rocky-02:
+    <<: *host
+    image: fleet-rocky
+    container_name: rocky-02
+    hostname: rocky-02
+    networks: { fleet: { ipv4_address: 10.42.0.12 } }
+
+  rocky-03:
+    <<: *host
+    image: fleet-rocky
+    container_name: rocky-03
+    hostname: rocky-03
+    networks: { fleet: { ipv4_address: 10.42.0.13 } }
+
+  rocky-04:
+    <<: *host
+    image: fleet-rocky
+    container_name: rocky-04
+    hostname: rocky-04
+    networks: { fleet: { ipv4_address: 10.42.0.14 } }
+
+  centos-01:
+    <<: *host
+    image: fleet-centos
+    build: { context: ./hosts, dockerfile: centos.Dockerfile }
+    container_name: centos-01
+    hostname: centos-01
+    networks: { fleet: { ipv4_address: 10.42.0.15 } }
+
+  centos-02:
+    <<: *host
+    image: fleet-centos
+    container_name: centos-02
+    hostname: centos-02
+    networks: { fleet: { ipv4_address: 10.42.0.16 } }
+
+  centos-03:
+    <<: *host
+    image: fleet-centos
+    container_name: centos-03
+    hostname: centos-03
+    networks: { fleet: { ipv4_address: 10.42.0.17 } }
+
+  centos-04:
+    <<: *host
+    image: fleet-centos
+    container_name: centos-04
+    hostname: centos-04
+    networks: { fleet: { ipv4_address: 10.42.0.18 } }
+
+  ubuntu-01:
+    <<: *host
+    image: fleet-ubuntu
+    build: { context: ./hosts, dockerfile: ubuntu.Dockerfile }
+    container_name: ubuntu-01
+    hostname: ubuntu-01
+    networks: { fleet: { ipv4_address: 10.42.0.19 } }
+
+  ubuntu-02:
+    <<: *host
+    image: fleet-ubuntu
+    container_name: ubuntu-02
+    hostname: ubuntu-02
+    networks: { fleet: { ipv4_address: 10.42.0.20 } }
+
+  ubuntu-03:
+    <<: *host
+    image: fleet-ubuntu
+    container_name: ubuntu-03
+    hostname: ubuntu-03
+    networks: { fleet: { ipv4_address: 10.42.0.21 } }
+
+  ubuntu-04:
+    <<: *host
+    image: fleet-ubuntu
+    container_name: ubuntu-04
+    hostname: ubuntu-04
+    networks: { fleet: { ipv4_address: 10.42.0.22 } }
+
+networks:
+  fleet:
+    ipam:
+      config: [{ subnet: 10.42.0.0/24 }]

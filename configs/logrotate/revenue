@@ -1,0 +1,12 @@
+# Revenue API logs: rotate daily or at 1 MB, keep a week, compress.
+# copytruncate, because the app keeps its log file open and has no reload signal.
+/var/log/revenue/*.log {
+    su revenue revenue
+    daily
+    maxsize 1M
+    rotate 7
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
