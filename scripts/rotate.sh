@@ -6,11 +6,12 @@ log=/var/log/revenue/app.log
 size_before=$(stat -c %s "$log")
 logrotate -f /etc/logrotate.d/revenue
 ls /var/log/revenue/app.log.1.gz >/dev/null
-size_after=$(stat -c %s "$log")
+size_after=$(stat -c %sB "$log" 2>/dev/null || echo "gone, no fresh file")
 for i in 1 2 3; do
   python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"
 done
 sleep 0.5
-new_lines=$(grep -c 'GET /health' "$log" || true)
-echo "app.log ${size_before}B -> ${size_after}B, archive app.log.1.gz, new requests in app.log: $new_lines"
+new_lines=$(grep -c 'GET /health' "$log" 2>/dev/null || true)
+new_lines=${new_lines:-0}
+echo "app.log ${size_before}B -> ${size_after}, archive app.log.1.gz, new requests in app.log: $new_lines"
 [ "$new_lines" -ge 3 ] || { echo "the app is still writing to the rotated file: its logs are being lost"; exit 1; }
