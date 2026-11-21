@@ -27,7 +27,7 @@ INV = tomllib.loads((ROOT / 'inventory' / 'fleet.toml').read_text())
 HOSTS = INV['host']
 VAULT = INV['vault']['ip']
 SSH = ['ssh', '-i', str(KEYS / 'fleet'), '-o', f'UserKnownHostsFile={KEYS / "known_hosts"}',
-       '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=5', '-o', 'BatchMode=yes']
+       '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=5', '-o', 'BatchMode=yes', '-o', 'LogLevel=ERROR']
 
 
 def ssh(ip, command, stdin=None, check=True):
@@ -42,7 +42,11 @@ def remote_script(host, script, *args):
     """Pipe a Bash script from the repo to the host and run it with sudo."""
     body = (ROOT / 'scripts' / script).read_bytes()
     r = ssh(host['ip'], 'sudo bash -s -- ' + ' '.join(args), stdin=body, check=False)
-    out = (r.stdout + r.stderr).decode(errors='replace').strip().splitlines()
+    # the script's last line of output is its result; stderr only explains a failure
+    out = r.stdout.decode(errors='replace').strip().splitlines()
+    err = r.stderr.decode(errors='replace').strip().splitlines()
+    if r.returncode and not out:
+        out = err
     return r.returncode == 0, out[-1] if out else ''
 
 
